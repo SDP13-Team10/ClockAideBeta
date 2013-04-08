@@ -1,0 +1,9 @@
+Database Notes 3/21/13
+
+students
+ID(PK), Name
+
+sessionLog
+id(FK), sessionID, sessionStartTime, sessionEndTime, type (Read or Set Mode)
+
+questionBank

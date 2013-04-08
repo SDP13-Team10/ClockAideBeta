@@ -1,0 +1,19 @@
+Revision History
+3/21/13 Started on database integration. Added a programming mode for lunch numbers ( prog() when key 0 is pressed, may choose another key later)
+	Added keypad detection. Data Insertion for programming mode functional. Data insertion for sessionLog 80% functional
+
+3/22/13 Fixed string concatenation problem for student responses. Realized that clockaide.py contains both normal and quiz modes together. Will continue 	 working with quiz.py base until everything works, then transfer it to clockaide.py
+
+3/23/13 Started on user login process. clockaide_login.py
+
+3/24/13 Moved database functionality to clockaide_rev_beta1.py.
+
+3/25/13 Got login partially working (clockaide_login_b.py). Using a loop that scans the students table to check for matches. Need to restructure it so that it 		can handle failed attempts. clockaide_login_c.py is an attempt at using a cap on attempts. clockaide_login_d.py is an attempt at using a while loop
+
+4/4/13 LCD Screen works. clockaide_rev_beta3.py
+
+4/6/13 Voicemap integrated. Set mode functional with voice map. clockaide_rev_beta4.py. Corrected counter
+	for correct answers. Have solution for user ID tracking, time display, and session data retrieval.
+
+4/7/13 Debugged voice playback in Set mode. Regular expression needed to be updated in speakTime
+
