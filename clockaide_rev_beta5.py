@@ -73,9 +73,12 @@ def normal():
 
  time.sleep(5)
  s.write('\xFE\x01')
- s.write('Quiz Mode? (1) Yes (2) No')
+ s.write('\xFE\x0D')				# Turns on blinking cursor
+# s.write('Quiz Mode? (1) Yes (2) No')
+ s.write('Quiz Mode?      (1) Yes (2) No')
  control = int(raw_input("Key pressed: "))
  if control == 1:
+  s.write('\xFE\x0C')				
   modeSelect()
  elif control == 2:
   quit()
@@ -97,6 +100,7 @@ if switch == 1:
  s.write('Quiz Mode? (1) Yes (2) No')
  control = int(raw_input("Key pressed: "))
 if control == 1:
+  s.write('\xFE\x0C')				# Turns off blinking cursor
   modeSelect()
 elif control == 2:
   quit()
@@ -121,6 +125,7 @@ def modeSelect():
  time.sleep(2)
 
  s.write('\xFE\x01')
+ s.write('\xFE\x0D')
  s.write('Read (1) Set (2)')
  u_input = int(raw_input("User Selection: ")) #Cast required
 
@@ -220,6 +225,7 @@ def read():
  if u_hr == h and u_min == m:
   print 'Correct! Good Job!'
   s.write('\xFE\x01')
+  s.write('\xFE\x0C')
   s.write('Correct!        Good Job!')
   time.sleep(1)
 
@@ -231,6 +237,7 @@ def read():
   db.commit()
   
   s.write('\xFE\x01')
+  s.write('\xFE\x0D')
   s.write('Try again?       (1) Yes (2) No')
   control = int(raw_input('Try again? 1 Yes 2 No '))
   if control == 1:
@@ -270,6 +277,7 @@ def read():
    time.sleep(1)
    
    s.write('\xFE\x01')
+   s.write('\xFE\x0D')
    s.write('Hour: Press enter when done')
    u_hr = int(raw_input("Hour: "))
    s.write('\xFE\x01')
@@ -280,6 +288,7 @@ def read():
    if u_hr == h and u_min == m:
     print 'Correct! Good Job!'
     s.write('\xFE\x01')
+    s.write('\xFE\x0C')
     s.write('Correct!        Good Job!')
     correct += 1
     time.sleep(2)
@@ -351,6 +360,7 @@ def Set():
 
  s.write('\xFE\x01')
  s.write('Set clock to:')
+ s.write('\xFE\x0D')
  # Play audio from voicemap
  speakTime(h,m)
  time.sleep(1)
@@ -365,6 +375,7 @@ def Set():
  print r_prompt
  s.write('\xFE\x01')
  s.write('\xFE\x80')
+ s.write('\xFE\x0D')
  s.write('Hour:             <Press Enter>')
  u_hr = int(raw_input("Hour: "))
  s.write('\xFE\x01')
@@ -384,6 +395,7 @@ def Set():
  if u_hr == h and u_min == m:
   print 'Correct! Good Job!'
   s.write('\xFE\x01')
+  s.write('\xFE\x0C')
   s.write('Correct!        Good Job!')
   time.sleep(1)
 
@@ -395,6 +407,7 @@ def Set():
   db.commit()
   
   s.write('\xFE\x01')
+  s.write('\xFE\x0D')
   s.write('Try again?       (1) Yes (2) No')
   control = int(raw_input('Try again? 1 Yes 2 No '))
   if control == 1:
@@ -403,6 +416,7 @@ def Set():
    stopTime = time.ctime()			# Marks end of session
  
    s.write('\xFE\x01')
+   s.write('\xFE\x0C')
    s.write('Thanks for      playing')
    time.sleep(1)
 
@@ -446,10 +460,12 @@ def Set():
    if u_hr == h and u_min == m:
     print 'Correct! Good Job!'
     s.write('\xFE\x01')
+    s.write('\xFE\x0C')
     s.write('Correct!           Good Job!')
     correct += 1
     time.sleep(2)
     s.write('\xFE\x01')
+    s.write('\xFE\x0D')
     s.write('Try again?      (1) Yes (2) No')
     
     time.sleep(1)
@@ -460,6 +476,7 @@ def Set():
      stopTime = time.ctime()			# Marks end of session
  
      s.write('\xFE\x01')
+     s.write('\xFE\x0C')
      s.write('Thanks for      playing')
      time.sleep(1)
 
@@ -504,9 +521,11 @@ def prog():
  print 'Enter lunch number'
 
  s.write('\xFE\x01')
+ s.write('\xFE\x0D')
  s.write('New lunch number.   <Press Enter>')
  ID_input = int(raw_input("Lunch Number: ")) #Cast required
  s.write('\xFE\x01')
+ s.write('\xFE\x0D')
  s.write('Enter student       name:')
  name = raw_input("Name: ")
 
@@ -526,8 +545,11 @@ def userLogin():
  global id
 
  s.write('\xFE\x01')
- s.write('User Login      Enter Lunch #:')
+ s.write('\xFE\x0D')
+# s.write('User Login      Enter Lunch #:')
+ s.write('Enter Lunch #:')
  user = int(raw_input("Enter your lunch number: "))
+
  
  sql = "SELECT id FROM students WHERE id=?"
  auth = cursor.execute(sql, [(user)])
@@ -542,7 +564,8 @@ def userLogin():
    print "Welcome " + queryResult[1]
    print 'User authenticated. Starting ClockAide....'
    s.write('\xFE\x01')
-   s.write('User Authenticated...')
+   s.write('\xFE\x0C')
+   s.write('     User         Authenticated')
    time.sleep(2)
    id = user
    normal()
