@@ -5,6 +5,7 @@
 # 4/6/13 Voice map, set mode, fixed time display
 # 4/7/13 Fixed voice prompt in Set mode, Adjusted displays for both read and set
 #	 User login system functional
+# 4/8/13 User login goes to normal mode, based on feedback from demo to professor
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re
 
@@ -28,6 +29,10 @@ cursor = db.cursor()
 s = serial.Serial(port = '/dev/ttyAMA0', baudrate = 9600)
 # x80 is the first spot on line 1
 # x90 is the first spot on line 2
+
+#---------------------------------- Turned off in this revision. Used in Revision 6
+# Motor Initialization
+#m = serial.Serial(port = '/dev/ttyACM0', baudrate = 9600)
 
 
 #----------------------------------
@@ -57,7 +62,9 @@ def normal():
  modulation = datetime.datetime.now().strftime("%p")
 # print clock
 
- print hourNow, minuteNow, modulation
+ print hourNow, minuteNow, modulation		# Send time to stepper motors
+# m.write(getDateTimeString())
+ 
  speakTime(hourNow,minuteNow) 
  #speakTime(1,0) Debugging prompt in set mode
  time.sleep(2)
@@ -72,7 +79,7 @@ def normal():
   modeSelect()
  elif control == 2:
   quit()
-"""  Testing
+"""  Testing live display of time
 while True:
  print greeting
  print mode
@@ -192,10 +199,12 @@ def read():
  s.write(min)
  time.sleep (2)
 
- s.write('\xFE\x9D')
+ s.write('\xFE\x01')
+ s.write('\xFE\x80')
  s.write('Hour:')
  u_hr = int(raw_input("Hour: "))
- s.write('\xFE\x95')
+ s.write('\xFE\x01')
+ s.write('\xFE\x80')
  s.write('Minute:')
  u_min = int(raw_input("Minute :"))
 
@@ -211,7 +220,7 @@ def read():
  if u_hr == h and u_min == m:
   print 'Correct! Good Job!'
   s.write('\xFE\x01')
-  s.write('Correct!     Good Job!')
+  s.write('Correct!        Good Job!')
   time.sleep(1)
 
   correct += 1
@@ -536,7 +545,7 @@ def userLogin():
    s.write('User Authenticated...')
    time.sleep(2)
    id = user
-   modeSelect()
+   normal()
 
  elif lockout != 3:
     lockout += 1
@@ -559,6 +568,11 @@ def userLogin():
 def userLogout():
   current = 0
 # -------------------------------------
+
+def getDateTimeString():
+        currentTime = datetime.datetime.now()
+        #print(currentTime.strftime("%I%M"))
+        return currentTime.strftime("%H, %M, %S, %d, %m, %Y")
 
 def speakTime(hour,minute):
 
