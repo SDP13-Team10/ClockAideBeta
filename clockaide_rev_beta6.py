@@ -6,7 +6,8 @@
 # 4/7/13 Fixed voice prompt in Set mode, Adjusted displays for both read and set
 #	 User login system functional
 # 4/8/13 User login goes to normal mode, based on feedback from demo to professor
-	 Stepper motors integrated. Normal mode is fully functional with an analog display
+#	 Stepper motors integrated. Normal mode is fully functional with an analog display
+#	 Blinking cursor.
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re
 
@@ -74,9 +75,11 @@ def normal():
 
  time.sleep(5)
  s.write('\xFE\x01')
- s.write('Quiz Mode? (1) Yes (2) No')
+ s.write('\xFE\x0D')				# Turns on blinking cursor
+ s.write('Quiz Mode?      (1) Yes (2) No')
  control = int(raw_input("Key pressed: "))
  if control == 1:
+  s.write('\xFE\x0C')				# Turns off blinking cursor
   modeSelect()
  elif control == 2:
   quit()
@@ -122,6 +125,7 @@ def modeSelect():
  time.sleep(2)
 
  s.write('\xFE\x01')
+ s.write('\xFE\x0D')
  s.write('Read (1) Set (2)')
  u_input = int(raw_input("User Selection: ")) #Cast required
 
@@ -190,6 +194,13 @@ def read():
  mode = 'Read'
 
 # Move stepper motors here
+
+ m.write(chr(2))	# Signals motor circuit to receive hour and minute from Pi
+ hourCh = chr(h)
+ minCh = chr(m)
+ #m.write(hourCh)
+ #m.write(minCh)
+
  print r_prompt
 
  s.write('\xFE\x01')
@@ -219,6 +230,7 @@ def read():
  if u_hr == h and u_min == m:
   print 'Correct! Good Job!'
   s.write('\xFE\x01')
+  s.write('\xFE\x0C')
   s.write('Correct!     Good Job!')
   time.sleep(1)
 
@@ -230,6 +242,7 @@ def read():
   db.commit()
   
   s.write('\xFE\x01')
+  s.write('\xFE\x0D')
   s.write('Try again?       (1) Yes (2) No')
   control = int(raw_input('Try again? 1 Yes 2 No '))
   if control == 1:
@@ -269,6 +282,7 @@ def read():
    time.sleep(1)
    
    s.write('\xFE\x01')
+   s.write('\xFE\x0D')
    s.write('Hour: Press enter when done')
    u_hr = int(raw_input("Hour: "))
    s.write('\xFE\x01')
@@ -279,6 +293,7 @@ def read():
    if u_hr == h and u_min == m:
     print 'Correct! Good Job!'
     s.write('\xFE\x01')
+    s.write('\xFE\x0C')
     s.write('Correct!        Good Job!')
     correct += 1
     time.sleep(2)
@@ -350,6 +365,7 @@ def Set():
 
  s.write('\xFE\x01')
  s.write('Set clock to:')
+ s.write('\xFE\x0D')
  # Play audio from voicemap
  speakTime(h,m)
  time.sleep(1)
@@ -364,6 +380,7 @@ def Set():
  print r_prompt
  s.write('\xFE\x01')
  s.write('\xFE\x80')
+ s.write('\xFE\x0D')
  s.write('Hour:             <Press Enter>')
  u_hr = int(raw_input("Hour: "))
  s.write('\xFE\x01')
@@ -383,6 +400,7 @@ def Set():
  if u_hr == h and u_min == m:
   print 'Correct! Good Job!'
   s.write('\xFE\x01')
+  s.write('\xFE\x0C')
   s.write('Correct!        Good Job!')
   time.sleep(1)
 
@@ -394,6 +412,7 @@ def Set():
   db.commit()
   
   s.write('\xFE\x01')
+  s.write('\xFE\x0D')
   s.write('Try again?       (1) Yes (2) No')
   control = int(raw_input('Try again? 1 Yes 2 No '))
   if control == 1:
@@ -408,6 +427,7 @@ def Set():
    print 'Thanks for playing.'
    time.sleep(1)
    s.write('\xFE\x01')
+   s.write('\xFE\x0C')
    s.write('Saving activity data...')
    time.sleep(5)
    print 'Saving activity data...'
@@ -445,10 +465,12 @@ def Set():
    if u_hr == h and u_min == m:
     print 'Correct! Good Job!'
     s.write('\xFE\x01')
+    s.write('\xFE\x0C')
     s.write('Correct!           Good Job!')
     correct += 1
     time.sleep(2)
     s.write('\xFE\x01')
+    s.write('\xFE\x0D')
     s.write('Try again?      (1) Yes (2) No')
     
     time.sleep(1)
@@ -459,6 +481,7 @@ def Set():
      stopTime = time.ctime()			# Marks end of session
  
      s.write('\xFE\x01')
+     s.write('\xFE\x0C')
      s.write('Thanks for      playing')
      time.sleep(1)
 
@@ -503,6 +526,7 @@ def prog():
  print 'Enter lunch number'
 
  s.write('\xFE\x01')
+ s.write('\xFE\x0D')
  s.write('New lunch number.   <Press Enter>')
  ID_input = int(raw_input("Lunch Number: ")) #Cast required
  s.write('\xFE\x01')
@@ -525,6 +549,7 @@ def userLogin():
  global id
 
  s.write('\xFE\x01')
+ s.write('\xFE\x0D')
  s.write('User Login      Enter Lunch #:')
  user = int(raw_input("Enter your lunch number: "))
  
@@ -541,7 +566,8 @@ def userLogin():
    print "Welcome " + queryResult[1]
    print 'User authenticated. Starting ClockAide....'
    s.write('\xFE\x01')
-   s.write('User Authenticated...')
+   s.write('\xFE\x0C')
+   s.write('     User         Authenticated')
    time.sleep(2)
    id = user
    normal()
