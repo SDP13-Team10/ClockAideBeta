@@ -211,13 +211,17 @@ def read():
  s.write(hour)
  s.write('\xFE\x82')
  s.write(min)
+ s.write('\xFE\x80')
+ s.write('Please read the time on clock')
  time.sleep (2)
 
- s.write('\xFE\x9D')
- s.write('Hour:')
+ s.write('\xFE\x01')
+ s.write('\xFE\x80')
+ s.write('Hour:             <Press Enter>')
  u_hr = int(raw_input("Hour: "))
- s.write('\xFE\x95')
- s.write('Minute:')
+ s.write('\xFE\x01')
+ s.write('\xFE\x80')
+ s.write('Minute:          <Press Enter>')
  u_min = int(raw_input("Minute :"))
 
  time.sleep(2)
@@ -233,7 +237,7 @@ def read():
   print 'Correct! Good Job!'
   s.write('\xFE\x01')
   s.write('\xFE\x0C')
-  s.write('Correct!     Good Job!')
+  s.write('Correct!        Good Job!')
   time.sleep(1)
 
   correct += 1
@@ -528,13 +532,21 @@ def prog():
  print 'Enter lunch number'
 
  s.write('\xFE\x01')
+ s.write('\xFE\x80')
+ s.write('Programming Mode')
+ time.sleep(2)
  s.write('\xFE\x0D')
- s.write('New lunch number.   <Press Enter>')
+ s.write('\xFE\x01')
+ s.write('New lunch number <Press Enter>')
  ID_input = int(raw_input("Lunch Number: ")) #Cast required
  s.write('\xFE\x01')
  s.write('Enter student       name:')
  name = raw_input("Name: ")
 
+ s.write('\xFE\x01')
+ s.write('User created:')
+ s.write(chr(13))
+ s.write(name)
  
  sql = "INSERT INTO students (id, Name) VALUES (?,?)"
  cursor.execute(sql, [(ID_input), (name)])

@@ -6,16 +6,9 @@
 # 4/7/13 Fixed voice prompt in Set mode, Adjusted displays for both read and set
 #	 User login system functional
 # 4/8/13 User login goes to normal mode, based on feedback from demo to professor
-# 4/9/13 Invalid input protection 
+# 4/9/13 Typed Character Display
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re
-from array import *
-
-#--------------------------------
-# Invalid input protection
-user = 0
-u_hr = 0
-u_min = 0
 
 #---------------------------------
 # Tracking system
@@ -216,12 +209,10 @@ def read():
  s.write('\xFE\x80')
  s.write('Hour:')
  u_hr = int(raw_input("Hour: "))
- #keyFilter(ur_hr)
  s.write('\xFE\x01')
  s.write('\xFE\x80')
  s.write('Minute:')
  u_min = int(raw_input("Minute :"))
- #keyFilter(u_min)
 
  time.sleep(2)
 
@@ -531,12 +522,8 @@ def prog():
  print 'Enter lunch number'
 
  s.write('\xFE\x01')
- s.write('\xFE\x80')
- s.write('Programming Mode')
- time.sleep(2)
  s.write('\xFE\x0D')
- s.write('\xFE\x01')
- s.write('New lunch number <Press Enter>')
+ s.write('New lunch number.   <Press Enter>')
  ID_input = int(raw_input("Lunch Number: ")) #Cast required
  s.write('\xFE\x01')
  s.write('\xFE\x0D')
@@ -560,20 +547,17 @@ def insertSessionData(start, user, sessionEnd):
 def userLogin():
  global lockout
  global id
- global user
 
  s.write('\xFE\x01')
  s.write('\xFE\x0D')
 # s.write('User Login      Enter Lunch #:')
  s.write('Enter Lunch #:')
-# user = int(raw_input("Enter your lunch number: "))
- user = raw_input("Enter your lunch number: ")
- idKeyFilter(user)
-
+ user = int(raw_input("Enter your lunch number: "))
+ textDisplay(user)
+ 
  sql = "SELECT id FROM students WHERE id=?"
  auth = cursor.execute(sql, [(user)])
  userInput = str(user)
- #userInput = user
  cursor.execute('''SELECT * FROM students WHERE id='''+userInput)
  queryResult = cursor.fetchone()
 
@@ -612,132 +596,22 @@ def userLogin():
 # -------------------------------------
 # Protects the software from blank and inappropriate inputs from the user
 
-"""
-def idKeyFilter(input):
- global user
+#def keyFilter(input)
 
- if input == ' ' or '-' or '*' or '-' or '/' or '.' :		# First level of protection
- #if input == '32' or '45' or '42' or '45' or '47' or '46' :
-
-#     s.write('\xFE\x01')
-#     s.write('Caught Operator')	Used for debugging
-#     time.sleep(2)
-     s.write('Invalid entry.   Try again...')
-     time.sleep(2)
-
-#     s.write('Hour:')
-#     u_hr = int(raw_input("Hour: "))
-#     s.write('\xFE\x01')
-#     s.write('\xFE\x80')
-#     s.write('Minute:')
-#     u_min = int(raw_input("Minute :"))
-
-     s.write('\xFE\x01')
-     s.write('Enter lunch #:')
-     user = int(raw_input("Enter lunch #: "))
-     input2 = str(user)
-
- if input2 == ' ' or '-' or '*' or '-' or '/' or '.':		# Second level
-     s.write('Invalid entry.   Try again...')
-     time.sleep(2)
-	
-     s.write('\xFE\x01')
-     s.write('Enter lunch 2#:')
-     user = int(raw_input("Enter lunch #: "))	
-
-     return user
-"""
-# different version of filter. The correct entry must occur on the third attempt
-# because the entry must be cast as an integer in the system for the database to read it properly
-"""
-def idKeyFilter(input):
- global user
-
- while input == ' ' or '-' or '*' or '-' or '/' or '.' :
-    s.write('x\FE\x01')
-    s.write('Caught Operator')
-    s.write('Invalid entry.   Try again...')
-    time.sleep(2)
-
-    s.write('\xFE\x01')
-    s.write('Enter lunch #:')
-    user = raw_input("Enter lunch #: ")
-    #input2 = str(user)
-
-    if user == ' ' or '-' or '*' or '-' or '/' or '.' :
-
-	    s.write('x\FE\x01')
-	    s.write('Caught Operator')
-	    s.write('Invalid entry.   Try again...')
-	    time.sleep(2)
-	
-	    s.write('\xFE\x01')
-	    s.write('Enter lunch #:')
-	    user = int(raw_input("Enter lunch 2#: "))
-
-    
-	
-	    return user
-
-    else:
-     idKeyFilter()
-"""
-
-def idKeyFilter(input):
- global user
-
-# test = str(input)
- #forbidden = array('i',[' ','-','*','-','/','.'])
- #forbidden = array('i', [32, 45, 42, 45, 47, 46])
- #forbidden = [' ','-','*','-','/','.']
- forbidden = ['32', '45', '42', '45', '47', '46']
-
- user = str(input)
-# if any(user in c for c in forbidden):
- user in forbidden
- s.write('\xFE\x01')
- s.write('Caught Operator')	
- time.sleep(1)
- s.write('\xFE\x01')
- s.write('Invalid entry.   Try again...')
- time.sleep(1)
-
- s.write('\xFE\x01')
- s.write('Enter lunch #:')
- user = int(raw_input("Enter lunch 2#: "))
+# if input == None:
+  
+# -----------------------------------
+# Displays characters as user types
+def textDisplay(input):
+ key = ""
+ i = -1;
  
- if user in forbidden:
-	 idKeyFilter(input)
- else:
-         int(user)
-	 return user
+ while(i < 0):
+  stroke = input
+  if stroke:
+     key = key + str(stroke)
+     s.write(stroke)
 
- #else:
-  #   idKeyFilter(input)
-#
-
-# ------------------------------------
-# Filter for Quiz Modes
-
-def quizKeyFilterHour(input):
- #global
-
- if input == ' ' or '-' or '*' or '-' or '/' or '.' :	
-
-     s.write('\xFE\x01')
-     #s.write('Caught Operator')	Used for debugging
-     time.sleep(2)
-     s.write('Invalid entry.   Try again...')
-     time.sleep(2)
-
-     s.write('Hour:')
-     u_hr = int(raw_input("Hour: "))
-     s.write('\xFE\x01')
-     s.write('\xFE\x80')
-     s.write('Minute:')
-     u_min = int(raw_input("Minute :"))
-
- return u_hr,u_min
 
 # -------------------------------------
 # Might not be used
