@@ -8,6 +8,8 @@
 # 4/8/13 User login goes to normal mode, based on feedback from demo to professor
 #	 Stepper motors integrated. Normal mode is fully functional with an analog display
 #	 Blinking cursor.
+# 4/19/13 Debugged error with stepper motors. Motor variable was the same as the minute variable in read mode
+#	 That's why it works in Normal mode, but not in read mode
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re
 
@@ -34,7 +36,7 @@ s = serial.Serial(port = '/dev/ttyAMA0', baudrate = 9600)
 
 #----------------------------------
 # Motor Initialization
-m = serial.Serial(port = '/dev/ttyACM0', baudrate = 9600)
+motor = serial.Serial(port = '/dev/ttyACM0', baudrate = 9600)
 time.sleep(2)
 
 #----------------------------------
@@ -65,7 +67,7 @@ def normal():
 # print clock
 
  print hourNow, minuteNow, modulation		# Send time to stepper motors
- m.write(getDateTimeString())
+ motor.write(getDateTimeString())
  
  speakTime(hourNow,minuteNow) 
  #speakTime(1,0) Debugging prompt in set mode
@@ -194,12 +196,12 @@ def read():
  mode = 'Read'
 
 # Move stepper motors here
-
- m.write(chr(2))	# Signals motor circuit to receive hour and minute from Pi
+ command = str(2)
+ motor.write(command)	# Signals motor circuit to receive hour and minute from Pi
  hourCh = chr(h)
  minCh = chr(m)
- #m.write(hourCh)
- #m.write(minCh)
+ motor.write(hourCh + minCh)
+ motor.write(minCh)
 
  print r_prompt
 
