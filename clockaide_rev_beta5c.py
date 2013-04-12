@@ -86,6 +86,40 @@ def normal():
   #modeSelect()
  elif control == 2:
   quit()
+
+ elif control == 3:
+  s.write('\xFE\x01')
+  s.write('Saving lunch numbers to Flash...')		# User List Export
+  time.sleep(2)
+  dbUsers()
+  time.sleep(1)
+  normal()
+
+ elif control == 4:
+  s.write('\xFE\x01')
+  s.write('Saving session log to Flash...')		# Session Log Export	
+  time.sleep(2)
+  dbSessionLog()
+  time.sleep(1)
+  normal()
+
+ elif control == 5:
+  s.write('\xFE\x01')
+  s.write('Saving quiz usage to Flash...')		# Activity Data Export	
+  time.sleep(2)
+  dbActivity()
+  time.sleep(1)
+  normal()
+
+ elif control == 6:
+  s.write('\xFE\x01')
+  s.write('Initializing Database Backup...')		# Database backup	
+  time.sleep(2)
+  dbBackup()
+  time.sleep(1)
+  normal()
+
+
 """  Testing live display of time
 while True:
  print greeting
@@ -158,6 +192,7 @@ def modeSelect():
   #cursor.execute("INSERT INTO sessionLog VALUES ('ID', 'sessionCount', 'sessionStart','0', 'Set')")
   #db.commit()
   Set()
+
  elif u_input == 0:
   #print 'Programming Mode'
   s.write('\xFE\x01')
@@ -694,7 +729,7 @@ def dbUsers():
  fileCopy(src, dst)
  print "User List Exported"
  s.write('\xFE\x01')
- s.write('User list exported')
+ s.write('User list         exported')
 
 # Session Log ----------------
 def dbSessionLog():
