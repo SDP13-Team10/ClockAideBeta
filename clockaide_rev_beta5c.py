@@ -8,7 +8,7 @@
 # 4/8/13 User login goes to normal mode, based on feedback from demo to professor
 # 4/10/13 Added score for each session. Currently shows zero (may need floating point support)
 
-import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re
+import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re, shutil, errno
 
 #---------------------------------
 # Tracking system
@@ -649,8 +649,67 @@ def speakTime(hour,minute):
 	playVoiceMap = "mplayer %s 1>/dev/null 2>&1 " + hourFile + " " + minuteFile
 	os.system(playVoiceMap)
 
+# -------------------------------------
+# Perform periodic backups of database for easy recovery
+
+def dbBackup():
+ src = "./Database/ClockAideDB"
+ dst = "../../../../media/PENDRIVE_" 	# Will have to use a USB drive with the clockaide volume label
+
+ fileCopy(src, dst)
+ print "Database Backup Successful"
+ s.write('\xFE\x01')
+ s.write('Database Backup Successful')
+
+
+def fileCopy(src, dst):
+ if dst != None:
+  shutil.copy(src, dst)			# This will overwrite the file if it exists
+  print "Copy Successful"
+  s.write('\xFE\x01')
+  s.write('Copy Successful')
+  time.sleep(1)
+
+ else:
+  print "Copy unsuccessful. Please try again."
+  s.write('\xFE\x01')
+  s.write('Copy unsuccessful. Please try again')
+  time.sleep(1)
+
+# Activity data (Student Responses) -------------------
+def dbActivity():
+ src = "./Database/Activity.csv"
+ dst = "../../../../media/PENDRIVE" 
+
+ fileCopy(src, dst)
+ print "Activity data Export Successful"
+ s.write('\xFE\x01')
+ s.write('Activity data export Successful')
+
+# Class List ----------------------
+def dbUsers():
+ src = "./Database/users.csv"
+ dst = "../../../../media/PENDRIVE" 
+
+ fileCopy(src, dst)
+ print "User List Exported"
+ s.write('\xFE\x01')
+ s.write('User list exported')
+
+# Session Log ----------------
+def dbSessionLog():
+ src = "./Database/sessionLog.csv"
+ dst = "../../../../media/PENDRIVE" 
+
+ fileCopy(src, dst)
+ print "Session Log Exported"
+ s.write('\xFE\x01')
+ s.write('Session Log exported')
+
+
+
 def main():
- userLogin()
+ #userLogin()
  normal()
 # modeSelect()
 
