@@ -7,6 +7,8 @@
 #	 User login system functional
 # 4/8/13 User login goes to normal mode, based on feedback from demo to professor
 # 4/9/13 Typed Character Display
+# 4/23/13 Adjusted digital display in Read, and wrong answer section. Transferred to
+	 revision 5c.
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re
 
@@ -202,6 +204,8 @@ def read():
  s.write('\xFE\x80')
  s.write(hour)
  s.write('\xFE\x82')
+ s.write(':')
+ s.write('\xFE\x83')
  s.write(min)
  time.sleep (2)
 
@@ -274,7 +278,7 @@ def read():
   while attempt != 5:
 #   print 'Wrong answer. Try it again'
    s.write('\xFE\x01')
-   s.write('Wrong answer. Try again...')
+   s.write('Wrong answer.   Try again...')
    time.sleep(1)
    
    s.write('\xFE\x01')
@@ -282,7 +286,7 @@ def read():
    s.write('Hour: Press enter when done')
    u_hr = int(raw_input("Hour: "))
    s.write('\xFE\x01')
-   s.write('Minute. Press enter when done>')
+   s.write('Minute. Press enter when done')
    u_min = int(raw_input("Minute :"))
 
    time.sleep(2)
@@ -328,9 +332,13 @@ def read():
     print 'Correct answer is...'
     s.write('\xFE\x01')
     s.write('Correct answer:')
-    s.write('\xFE\x90')
+    time.sleep(1)
+    s.write('\xFE\x01')
+    s.write('\xFE\x84')
     s.write(hour)
-    s.write('\xFE\x93')     
+    s.write('\xFE\x85')
+    s.write(':')
+    s.write('\xFE\x86')     
     s.write(min)
     time.sleep(2)
     print h, m
@@ -356,8 +364,8 @@ def Set():
  print "*************************"
 
 # Time display
- #hour = "%d" % h
- #min = "%d" % m
+ hour = "%d" % h
+ min = "%d" % m
 
  s.write('\xFE\x01')
  s.write('Set clock to:')
@@ -502,9 +510,13 @@ def Set():
     print 'Correct answer is...'
     s.write('\xFE\x01')
     s.write('Correct answer:')
-    s.write('\xFE\x90')
+    time.sleep(1)
+    s.write('\xFE\x01')
+    s.write('\xFE\x84')
     s.write(hour)
-    s.write('\xFE\x93')     
+    s.write('\xFE\x85')
+    s.write(':')
+    s.write('\xFE\x86')     
     s.write(min)
     time.sleep(2)
     print h, m
@@ -550,10 +562,11 @@ def userLogin():
 
  s.write('\xFE\x01')
  s.write('\xFE\x0D')
+ s.write('\xFE\x80+')
 # s.write('User Login      Enter Lunch #:')
  s.write('Enter Lunch #:')
  user = int(raw_input("Enter your lunch number: "))
- textDisplay(user)
+ #textDisplay(user)
  
  sql = "SELECT id FROM students WHERE id=?"
  auth = cursor.execute(sql, [(user)])
