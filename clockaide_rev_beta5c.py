@@ -7,6 +7,7 @@
 #	 User login system functional
 # 4/8/13 User login goes to normal mode, based on feedback from demo to professor
 # 4/10/13 Added score for each session. Currently shows zero (may need floating point support)
+# 4/23/13 Added changes to time display and wrong answer display from rev. 5b
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re, shutil, errno
 
@@ -245,6 +246,8 @@ def read():
  s.write('\xFE\x80')
  s.write(hour)
  s.write('\xFE\x82')
+ s.write(':')
+ s.write('\xFE\x83')
  s.write(min)
  time.sleep (2)
 
@@ -318,15 +321,15 @@ def read():
   while attempt != 5:
 #   print 'Wrong answer. Try it again'
    s.write('\xFE\x01')
-   s.write('Wrong answer. Try again...')
+   s.write('Wrong answer...    Try again')
    time.sleep(1)
    
    s.write('\xFE\x01')
    s.write('\xFE\x0D')
-   s.write('Hour: Press enter when done')
+   s.write('Hour: Press      enter when done')
    u_hr = int(raw_input("Hour: "))
    s.write('\xFE\x01')
-   s.write('Minute. Press enter when done>')
+   s.write('Minute: Press   enter when done')
    u_min = int(raw_input("Minute :"))
 
    time.sleep(2)
@@ -352,6 +355,7 @@ def read():
      time.sleep(1)
 
      print 'Thanks for playing.'
+     score = (correct/questions)
      time.sleep(1)
      s.write('\xFE\x01')
      s.write('Saving activity data...')
@@ -374,9 +378,13 @@ def read():
     print 'Correct answer is...'
     s.write('\xFE\x01')
     s.write('Correct answer:')
-    s.write('\xFE\x86')
+    time.sleep(1)
+    s.write('\xFE\x01')
+    s.write('\xFE\x84')
     s.write(hour)
-    s.write('\xFE\x89')     
+    s.write('\xFE\x85')
+    s.write(':')
+    s.write('\xFE\x86')   
     s.write(min)
     time.sleep(2)
     print h, m
@@ -408,7 +416,7 @@ def Set():
  #hour = "%d" % h
  #min = "%d" % m
 
- questions +- 1
+ questions += 1
  s.write('\xFE\x01')
  s.write('Set clock to:')
  s.write('\xFE\x0D')
@@ -472,6 +480,7 @@ def Set():
    time.sleep(1)
 
    print 'Thanks for playing.'
+   score = (correct/questions)
    time.sleep(1)
    s.write('\xFE\x01')
    s.write('Saving activity data...')
@@ -554,9 +563,13 @@ def Set():
     print 'Correct answer is...'
     s.write('\xFE\x01')
     s.write('Correct answer:')
-    s.write('\xFE\x90')
+    time.sleep(1)
+    s.write('\xFE\x01')
+    s.write('\xFE\x84')
     s.write(hour)
-    s.write('\xFE\x93')     
+    s.write('\xFE\x85')
+    s.write(':')
+    s.write('\xFE\x86')     
     s.write(min)
     time.sleep(2)
     print h, m
