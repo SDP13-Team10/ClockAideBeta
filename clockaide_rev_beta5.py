@@ -534,12 +534,15 @@ def prog():
  cursor.execute(sql, [(ID_input), (name)])
  db.commit()
 
+# -------------------------------------
+# Is not used at all in the program
 def insertSessionData(start, user, sessionEnd):
  sessionStart = time.ctime()
  user = cursor.execute("SELECT * FROM students WHERE ID = 1234")
  sessionEnd = 0
  mode = "Read"
- 
+
+# -------------------------------------
 def userLogin():
  global lockout
  global id
@@ -587,7 +590,17 @@ def userLogin():
    s.write('Returning to Normal Mode...')
    time.sleep(1)
    normal()
+# -------------------------------------
 
+# -------------------------------------
+# Protects the software from blank and inappropriate inputs from the user
+
+#def keyFilter(input)
+
+# if input == None:
+  
+# -------------------------------------
+# Might not be used
 def userLogout():
   current = 0
 # -------------------------------------

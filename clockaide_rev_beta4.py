@@ -105,7 +105,7 @@ s_read = 2
 def modeSelect():
  #print greeting			# Computer display
  #print menu
-
+ global id
  global sessionCount
  s.write('\xFE\x01')		# LCD Display
  s.write('Welcome to Quiz Mode')
@@ -268,7 +268,7 @@ def read():
    if u_hr == h and u_min == m:
     print 'Correct! Good Job!'
     s.write('\xFE\x01')
-    s.write('Good Job!')
+    s.write('Correct!        Good Job!')
     correct += 1
     time.sleep(2)
     s.write('\xFE\x01')
@@ -371,7 +371,7 @@ def Set():
  if u_hr == h and u_min == m:
   print 'Correct! Good Job!'
   s.write('\xFE\x01')
-  s.write('Correct! Good Job!')
+  s.write('Correct!        Good Job!')
   time.sleep(1)
 
   correct += 1

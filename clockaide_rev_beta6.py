@@ -36,7 +36,7 @@ s = serial.Serial(port = '/dev/ttyAMA0', baudrate = 9600)
 
 #----------------------------------
 # Motor Initialization
-motor = serial.Serial(port = '/dev/ttyACM0', baudrate = 9600)
+motor = serial.Serial(port = '/dev/ttyUSB0', baudrate = 9600)		# alternate location /dev/ttyUSB0 original /dev/ttyACM0
 time.sleep(2)
 
 #----------------------------------
@@ -47,6 +47,11 @@ keypad = serial.Serial()
 #Normal Mode
 greeting = "Welcome to ClockAide!"
 mode = "Normal Mode"
+
+def getDateTimeString():
+        currentTime = datetime.datetime.now()
+        #print(currentTime.strftime("%I%M"))
+        return currentTime.strftime("%H, %M, %S, %d, %m, %Y")
 
 def normal():
  global sessionCount
@@ -64,10 +69,10 @@ def normal():
  hourNow = datetime.datetime.now().strftime("%I")
  minuteNow = datetime.datetime.now().strftime("%M")
  modulation = datetime.datetime.now().strftime("%p")
+ motor.write(getDateTimeString())		# Sends signal to motor circuit to wake up
 # print clock
 
  print hourNow, minuteNow, modulation		# Send time to stepper motors
- motor.write(getDateTimeString())
  
  speakTime(hourNow,minuteNow) 
  #speakTime(1,0) Debugging prompt in set mode
@@ -85,6 +90,8 @@ def normal():
   modeSelect()
  elif control == 2:
   quit()
+ elif control == 0:
+  prog()
 """  Testing live display of time
 while True:
  print greeting
@@ -200,7 +207,7 @@ def read():
  motor.write(command)	# Signals motor circuit to receive hour and minute from Pi
  hourCh = chr(h)
  minCh = chr(m)
- motor.write(hourCh + minCh)
+ motor.write(hourCh)
  motor.write(minCh)
 
  print r_prompt
@@ -607,11 +614,6 @@ def userLogin():
 def userLogout():
   current = 0
 # -------------------------------------
-
-def getDateTimeString():
-        currentTime = datetime.datetime.now()
-        #print(currentTime.strftime("%I%M"))
-        return currentTime.strftime("%H, %M, %S, %d, %m, %Y")
 
 def speakTime(hour,minute):
 

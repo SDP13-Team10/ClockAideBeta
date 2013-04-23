@@ -7,7 +7,7 @@
 #	 User login system functional
 # 4/8/13 User login goes to normal mode, based on feedback from demo to professor
 # 4/10/13 Added score for each session. Currently shows zero (may need floating point support)
-# 4/23/13 Added changes to time display and wrong answer display from rev. 5b
+# 4/22/13 Added changes to time display and wrong answer display from rev. 5b
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re, shutil, errno
 
@@ -118,6 +118,9 @@ def normal():
   time.sleep(2)
   dbBackup()
   time.sleep(1)
+  normal()
+
+ elif control == 8:					# User prompt to speak current time
   normal()
 
 

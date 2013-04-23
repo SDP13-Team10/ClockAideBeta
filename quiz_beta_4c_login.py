@@ -199,7 +199,7 @@ def userLogin():
  elif user != auth:
   print 'Invalid lunch number. Please try again....'
 
-def userLogout()
+def userLogout():
   current = 0
  
 def main():

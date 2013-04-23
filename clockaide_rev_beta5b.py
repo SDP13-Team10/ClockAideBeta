@@ -7,7 +7,7 @@
 #	 User login system functional
 # 4/8/13 User login goes to normal mode, based on feedback from demo to professor
 # 4/9/13 Typed Character Display
-# 4/23/13 Adjusted digital display in Read, and wrong answer section. Transferred to
+# 4/22/13 Adjusted digital display in Read, and wrong answer section. Transferred to
 	 revision 5c.
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re
