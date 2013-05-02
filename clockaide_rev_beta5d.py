@@ -11,13 +11,16 @@
 # 4/30/13 Moved database export functions to programming mode. Adjusted display for options in programming mode
 #	  Started on adding a repeat option for set mode. Call to speakTime ends the program. Started on protection against no USB drive inserted for dB Backup
 #	  Fixed bug in set mode for wrong attempts
+# 5/1/13  Added administrator logon. Implemented save database option. Needs further analysis because of root permissions
+#	  Uses an external bash script
 
-import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re, shutil, errno
+import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re, shutil, errno, subprocess
 
 
 #---------------------------------
 # Tracking system
 id = 0
+admin = 0		# Admin flag
 correct = 0
 incorrect = 0
 questions = 0
@@ -90,7 +93,7 @@ def normal():
  if control == 1:
   s.write('\xFE\x0C')
   userLogin()				
-  #modeSelect()
+  modeSelect()
  elif control == 2:
   quit()
 
@@ -99,6 +102,7 @@ def normal():
 
  elif control == 0:
   #print 'Programming Mode'
+  #adminLogin()
   s.write('\xFE\x01')
   s.write('ID Programming Mode')
   prog()
@@ -582,16 +586,19 @@ def prog():
  s.write('Programming Mode')
  time.sleep(2)
 
- print '1: Add user 2: Save database 3: Export users 4: Export Session Log 5: Export Activity data 6: Backup Database'
+ print '1: Add user 2: Delete User 3: Export users 4: Export Session Log 5: Export Activity data 6: Backup Database'
  
  s.write('\xFE\x01')
- s.write('1: Add user     2: Save database')
+ s.write('1: Add user     2: Delete user  ')
  time.sleep(2)
  s.write('\xFE\x01')
  s.write('3: Export users 4: Export Logs') 
  time.sleep(2)
  s.write('\xFE\x01')
  s.write('5: Export usage 6: Backup dB') 
+ time.sleep(2)
+ s.write('\xFE\x01')
+ s.write('7: Save database') 
  time.sleep(1)
 
  s.write('\xFE\x01')
@@ -608,19 +615,41 @@ def prog():
   print 'Enter lunch number'
   s.write('\xFE\x01')
   s.write('\xFE\x0D')
-  s.write('New lunch number.   <Press Enter>')
+  s.write('New lunch number <Press Enter>')
   ID_input = int(raw_input("Lunch Number: ")) #Cast required
   s.write('\xFE\x01')
   s.write('\xFE\x0D')
-  s.write('Enter student       name:')
+  s.write('Enter student   name:')
   name = raw_input("Name: ")
-
+  
+  s.write('\xFE\x01')
+  s.write('New User        ' + name)
+  time.sleep(2)
   sql = "INSERT INTO students (id, Name) VALUES (?,?)"
   cursor.execute(sql, [(ID_input), (name)])
   db.commit()
   
- elif option == 2:
-  pass
+  prog()
+  
+ elif option == 2:					# Delete user: not working - check syntax
+  print 'Enter lunch number'
+  s.write('\xFE\x01')
+  s.write('\xFE\x0D')
+  s.write('ID to remove     <Press Enter>')
+  ID_input = int(raw_input("Lunch Number: ")) #Cast required
+  
+  s.write('\xFE\x01')
+  s.write('\xFE\x0D')
+ 
+  s.write('\xFE\x01')
+  s.write(' Removed user ')
+  time.sleep(2)
+#  cursor.execute(DELETE * FROM students WHERE id=+ID_input)
+#  sql = "DELETE FROM students (id, Name) VALUES (?,?)"
+ # cursor.execute(sql, [(ID_input), (name)])
+  db.commit()
+  
+  prog()
 ###################
 
  elif option == 3:
@@ -655,12 +684,24 @@ def prog():
   time.sleep(1)
   normal()
 
- elif option == 7:
+ elif option == 7:					# Database export
+  s.write('\xFE\x0C')
+  s.write('\xFE\x01')
+  s.write('Saving database')
+  #subprocess.Popen(["/usr/bin/bash", "dbsave_test", "var = 11; ignore all", .])
+  subprocess.Popen(['./Database/dbsave_test "var = 11; ignore all", /home/pi/Software/Database'], shell = True)
+
+  time.sleep(1)
+  normal() 
+
+ elif option == 8:
   s.write('\xFE\x0C')
   s.write('\xFE\x01')
   s.write('Returning to    normal mode ...')
   time.sleep(1)
   normal()
+
+ 
 ###################
 
 
@@ -675,10 +716,61 @@ def insertSessionData(start, user, sessionEnd):
  sessionEnd = 0
  mode = "Read"
 
+# ------------------------------------
+def adminLogin():
+ global lockout
+ global id 
+ global admin
+
+ s.write('\xFE\x01')
+ s.write('\xFE\x0D')
+# s.write('User Login      Enter Lunch #:')
+ s.write('Enter admin     user ID:')
+ user = int(raw_input("Enter your lunch number: "))
+
+ 
+ sql = "SELECT id FROM students WHERE id=?"
+ auth = cursor.execute(sql, [(user)])
+ userInput = str(user)
+ cursor.execute('''SELECT * FROM students WHERE id='''+userInput)
+ queryResult = cursor.fetchone()
+
+ if queryResult is None:
+ 	queryResult = [-1,"-1"]
+
+ if queryResult[0] == user and user == admin:
+   print "Welcome " + queryResult[1]
+   print 'Admin authenticated. '
+   s.write('\xFE\x01')
+   s.write('\xFE\x0C')
+   s.write('Welcome         ' + queryResult[1])
+   time.sleep(2)
+#   id = user
+
+ elif lockout != 3:
+    lockout += 1
+    print 'Invalid admin ID. Please try again....'
+    s.write('\xFE\x01')
+    s.write('Login Failed.   Try again...')
+    time.sleep(1)
+    userLogin()
+
+ else:
+   print 'Maximum attempts reached. Returning to normal mode...'
+   s.write('\xFE\x01')
+   s.write('Maximum attempts reached....')
+   time.sleep(3)
+   s.write('\xFE\x01')
+   s.write('Returning to Normal Mode...')
+   time.sleep(1)
+   normal()
+
+
 # -------------------------------------
 def userLogin():
  global lockout
  global id
+ global admin
 
  s.write('\xFE\x01')
  s.write('\xFE\x0D')
@@ -701,13 +793,15 @@ def userLogin():
    print 'User authenticated. Starting ClockAide....'
    s.write('\xFE\x01')
    s.write('\xFE\x0C')
-   s.write('     User         Authenticated')
+   s.write('Welcome         ' + queryResult[1])		# Shows user name
+   #s.write('     User         Authenticated')
    time.sleep(2)
    id = user
    #normal()
-   modeSelect()		# Was switched back so that different users can log in
+   #modeSelect()		# Was switched back so that different users can log in
 			# Placed a call for this in Normal mode
-
+			# Turned off to allow login for Programming mode
+ 
  elif lockout != 3:
     lockout += 1
     print 'Invalid lunch number. Please try again....'
