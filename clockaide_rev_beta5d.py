@@ -13,6 +13,7 @@
 #	  Fixed bug in set mode for wrong attempts
 # 5/1/13  Added administrator logon. Implemented save database option. Needs further analysis because of root permissions
 #	  Uses an external bash script
+# 5/9/13  Resolved database save process. Implementation is in gamma revision 2
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re, shutil, errno, subprocess
 
