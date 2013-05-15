@@ -9,6 +9,7 @@
 # 4/10/13 Added score for each session. Currently shows zero (may need floating point support)
 # 4/22/13 Added changes to time display and wrong answer display from rev. 5b
 # 4/22/13 Extracted from rev 5c
+# 5/2/13  Moved database updates from revision 5c
 
 import time, datetime, sys, random, sqlite3, string, usb, serial, os, datetime, re, shutil, errno
 
@@ -37,7 +38,7 @@ s = serial.Serial(port = '/dev/ttyAMA0', baudrate = 9600)
 
 #---------------------------------- Turned off in this revision. Used in Revision 6
 # Motor Initialization
-motor = serial.Serial(port = '/dev/ttyUSB0', baudrate = 9600) 	# Alternate location /dev/ttyUSB0
+motor = serial.Serial(port = '/dev/ttyACM0', baudrate = 9600) 	# Alternate location /dev/ttyUSB0 or /dev/ttyACM0
 
 
 #----------------------------------
@@ -66,11 +67,13 @@ def normal():
  hourNow = datetime.datetime.now().strftime("%I")
  minuteNow = datetime.datetime.now().strftime("%M")
  modulation = datetime.datetime.now().strftime("%p")
- motor.write(getDateTimeString())		# Sends signal to motor circuit to wake up
+ motor.write(getDateTimeString())
+ time.sleep(5)		# Sends signal to motor circuit to wake up
+ print getDateTimeString()
 # print clock
 
  print hourNow, minuteNow, modulation		# Send time to stepper motors
- #motor.write(getDateTimeString())    Original line, repeated
+ #motor.write(getDateTimeString())    # Original line, repeated. Testing to see if 2nd call wakes up motors
  
  speakTime(hourNow,minuteNow) 
  
@@ -89,48 +92,6 @@ def normal():
   #modeSelect()
  elif control == 2:
   quit()
-
- elif option == 3:
-  s.write('\xFE\x01')
-  s.write('Saving lunch    numbers to Flash')		# User List Export
-  time.sleep(2)
-  dbUsers()
-  time.sleep(1)
-  normal()
-
- elif option == 4:
-  s.write('\xFE\x01')
-  s.write('Saving session  log to Flash...')		# Session Log Export	
-  time.sleep(2)
-  dbSessionLog()
-  time.sleep(1)
-  normal()
-
- elif option == 5:
-  s.write('\xFE\x01')
-  s.write('Saving quiz usage to Flash...')		# Activity Data Export	
-  time.sleep(2)
-  dbActivity()
-  time.sleep(1)
-  normal()
-
- elif option == 6:
-  s.write('\xFE\x01')
-  s.write('Initializing Database Backup...')		# Database backup	
-  time.sleep(2)
-  dbBackup()
-  time.sleep(1)
-  normal()
-
- elif option == 7:					# Database export
-  s.write('\xFE\x0C')
-  s.write('\xFE\x01')
-  s.write('Saving database')
-  #subprocess.Popen(["/usr/bin/bash", "dbsave_test", "var = 11; ignore all", .])
-  subprocess.Popen(['./Database/dbsave_test "var = 11; ignore all", /home/pi/Software/Database'], shell = True)
-
-  time.sleep(1)
-  normal() 
 
  elif control == 8:					# User prompt to speak current time
   normal()
@@ -591,20 +552,125 @@ def prog():
  print '===================='
  print 'Enter lunch number'
 
+ s.write('\xFE\x0C')
+ print 'What would you like to do?'
  s.write('\xFE\x01')
- s.write('\xFE\x0D')
- s.write('New lunch number.   <Press Enter>')
- ID_input = int(raw_input("Lunch Number: ")) #Cast required
- s.write('\xFE\x01')
- s.write('\xFE\x0D')
- s.write('Enter student       name:')
- name = raw_input("Name: ")
+ s.write('Programming Mode')
+ time.sleep(2)
 
+ print '1: Add user 2: Delete User 3: Export users 4: Export Session Log 5: Export Activity data 6: Backup Database'
  
- sql = "INSERT INTO students (id, Name) VALUES (?,?)"
- cursor.execute(sql, [(ID_input), (name)])
- db.commit()
+ s.write('\xFE\x01')
+ s.write('1: Add user     2: Delete user  ')
+ time.sleep(2)
+ s.write('\xFE\x01')
+ s.write('3: Export users 4: Export Logs') 
+ time.sleep(2)
+ s.write('\xFE\x01')
+ s.write('5: Export usage 6: Backup dB') 
+ time.sleep(2)
+ s.write('\xFE\x01')
+ s.write('7: Save database') 
+ time.sleep(1)
 
+ s.write('\xFE\x01')
+ s.write('\xFE\x0D')
+ s.write('Choose an option')
+
+
+ option = int(raw_input("Option: ")) #Cast required 
+
+ if option == 0:
+  prog()
+
+ elif option == 1:
+  print 'Enter lunch number'
+  s.write('\xFE\x01')
+  s.write('\xFE\x0D')
+  s.write('New lunch number <Press Enter>')
+  ID_input = int(raw_input("Lunch Number: ")) #Cast required
+  s.write('\xFE\x01')
+  s.write('\xFE\x0D')
+  s.write('Enter student   name:')
+  name = raw_input("Name: ")
+  
+  s.write('\xFE\x01')
+  s.write('New User        ' + name)
+  time.sleep(2)
+  sql = "INSERT INTO students (id, Name) VALUES (?,?)"
+  cursor.execute(sql, [(ID_input), (name)])
+  db.commit()
+  
+  prog()
+  
+ elif option == 2:					# Delete user: not working - check syntax
+  print 'Enter lunch number'
+  s.write('\xFE\x01')
+  s.write('\xFE\x0D')
+  s.write('ID to remove     <Press Enter>')
+  ID_input = int(raw_input("Lunch Number: ")) #Cast required
+  
+  s.write('\xFE\x01')
+  s.write('\xFE\x0D')
+ 
+  s.write('\xFE\x01')
+  s.write(' Removed user ')
+  time.sleep(2)
+#  cursor.execute(DELETE * FROM students WHERE id=+ID_input)
+#  sql = "DELETE FROM students (id, Name) VALUES (?,?)"
+ # cursor.execute(sql, [(ID_input), (name)])
+  db.commit()
+  
+  prog()
+
+ elif option == 3:
+  s.write('\xFE\x01')
+  s.write('Saving lunch    numbers to Flash')		# User List Export
+  time.sleep(2)
+  dbUsers()
+  time.sleep(1)
+  normal()
+
+ elif option == 4:
+  s.write('\xFE\x01')
+  s.write('Saving session  log to Flash...')		# Session Log Export	
+  time.sleep(2)
+  dbSessionLog()
+  time.sleep(1)
+  normal()
+
+ elif option == 5:
+  s.write('\xFE\x01')
+  s.write('Saving quiz usage to Flash...')		# Activity Data Export	
+  time.sleep(2)
+  dbActivity()
+  time.sleep(1)
+  normal()
+
+ elif option == 6:
+  s.write('\xFE\x01')
+  s.write('Initializing Database Backup...')		# Database backup	
+  time.sleep(2)
+  dbBackup()
+  time.sleep(1)
+  normal()
+
+ elif option == 7:					# Database export
+  s.write('\xFE\x0C')
+  s.write('\xFE\x01')
+  s.write('Saving database')
+  #subprocess.Popen(["/usr/bin/bash", "dbsave_test", "var = 11; ignore all", .])
+  subprocess.Popen(['./Database/dbsave_test "var = 11; ignore all", /home/pi/Software/Database'], shell = True)
+
+  time.sleep(1)
+  normal() 
+
+ elif option == 8:
+  s.write('\xFE\x0C')
+  s.write('\xFE\x01')
+  s.write('Returning to    normal mode ...')
+  time.sleep(1)
+  normal()
 # -------------------------------------
 # Is not used at all in the program
 def insertSessionData(start, user, sessionEnd):
